@@ -1,0 +1,148 @@
+{% extends "access_control/layout.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <h2 class="text-2xl font-bold">Configuration du système</h2>
+
+    <!-- Formulaire des règles d'accès -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-4">Règles d'accès</h3>
+
+        <form method="post" action="{% url 'system_settings' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="access_rules">
+
+            <div class="space-y-4">
+                <!-- Restrictions horaires -->
+                <div>
+                    {{ access_form.enable_time_restrictions }}
+                </div>
+
+                <!-- Plage horaire -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {{ access_form.opening_time }}
+                    {{ access_form.closing_time }}
+                </div>
+
+                <!-- Zones restreintes -->
+                <div>
+                    <label class="block text-gray-700 mb-2">Zones restreintes</label>
+                    <div class="space-y-2">
+                        {% for zone in zones %}
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox"
+                                   name="restricted_zones"
+                                   value="{{ zone.id }}"
+                                   id="zone_{{ zone.id }}"
+                                   class="rounded text-blue-600"
+                                   {% if zone.is_restricted %}checked{% endif %}>
+                            <label for="zone_{{ zone.id }}">{{ zone.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-200 flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Enregistrer les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Gestion des badges -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-4">Gestion des badges</h3>
+
+        <form method="post" action="{% url 'system_settings' %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="badge_settings">
+
+            <div class="space-y-4">
+                <!-- Mode lecture -->
+                <div>
+                    {{ badge_form.scanning_active }}
+                    <p class="text-sm text-gray-500 mt-1">Permet de scanner de nouveaux badges via l'interface</p>
+                </div>
+
+                <!-- Désactivation badge -->
+                <div>
+                    <label class="block text-gray-700 mb-2">Désactiver un badge</label>
+                    <div class="flex space-x-2">
+                        {{ badge_form.badge_uid }}
+                        <button type="submit"
+                                name="deactivate"
+                                value="1"
+                                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                            Désactiver
+                        </button>
+                    </div>
+                    {% if badge_form.badge_uid.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ badge_form.badge_uid.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Script pour améliorer l'UX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Activer/désactiver les champs de temps selon la checkbox
+    const timeToggle = document.querySelector('#id_enable_time_restrictions');
+    const timeInputs = document.querySelectorAll('#id_opening_time, #id_closing_time');
+
+    function toggleTimeInputs() {
+        timeInputs.forEach(input => {
+            input.disabled = !timeToggle.checked;
+        });
+    }
+
+    // Initial state
+    toggleTimeInputs();
+
+    // On change
+    timeToggle.addEventListener('change', toggleTimeInputs);
+
+    // Confirmation pour la désactivation
+    const deactivateBtn = document.querySelector('button[name="deactivate"]');
+    if (deactivateBtn) {
+        deactivateBtn.addEventListener('click', function(e) {
+            const uid = document.querySelector('#id_badge_uid').value;
+            if (!uid) {
+                e.preventDefault();
+                alert('Veuillez entrer un UID de badge');
+                return;
+            }
+            if (!confirm(`Désactiver le badge ${uid} ?`)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+
+<style>
+ /* Style de base pour tous les champs */
+    input[type="text"],
+    input[type="time"],
+    input[type="checkbox"],
+    input[type="password"],
+    select,
+    textarea {
+        @apply w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500;
+    }
+
+    /* Cases à cocher spécifiques */
+    input[type="checkbox"] {
+        @apply w-5 h-5;
+    }
+
+    /* Labels des champs */
+    label:not(.flex label) {
+        @apply block text-gray-700 mb-2;
+    }
+</style>
+{% endblock %}

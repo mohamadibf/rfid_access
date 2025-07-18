@@ -1,0 +1,106 @@
+{% extends "access_control/layout.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-bold mb-6">Paramètres du profil</h2>
+
+    <!-- Formulaire d'informations personnelles -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-4">Informations personnelles</h3>
+        <form method="post" action="{% url 'profile_settings' %}">
+            {% csrf_token %}
+            <input type="hidden" name="personal_info" value="1">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Prénom</label>
+                    {{ user_form.first_name }}
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Nom</label>
+                    {{ user_form.last_name }}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Email</label>
+                {{ user_form.email }}
+            </div>
+
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Enregistrer les modifications
+            </button>
+        </form>
+    </div>
+
+    <!-- Formulaire de changement de mot de passe - Version améliorée -->
+    <div>
+        <h3 class="text-xl font-semibold mb-4">Changer le mot de passe</h3>
+        <form method="post" action="{% url 'profile_settings' %}" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="password_change" value="1">
+
+            <!-- Ancien mot de passe -->
+            <div class="relative">
+                <label class="block text-gray-700 mb-2">Ancien mot de passe</label>
+                <div class="relative">
+                    {{ password_form.old_password }}
+                    <span class="absolute right-3 top-3 text-gray-400">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                </div>
+                {% if password_form.old_password.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ password_form.old_password.errors.as_text }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Nouveau mot de passe -->
+            <div class="relative">
+                <label class="block text-gray-700 mb-2">Nouveau mot de passe</label>
+                <div class="relative">
+                    {{ password_form.new_password1 }}
+                    <span class="absolute right-3 top-3 text-gray-400">
+                        <i class="fas fa-key"></i>
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    {{ password_form.new_password1.help_text }}
+                </p>
+            </div>
+
+            <!-- Confirmation -->
+            <div class="relative">
+                <label class="block text-gray-700 mb-2">Confirmer le nouveau mot de passe</label>
+                <div class="relative">
+                    {{ password_form.new_password2 }}
+                    <span class="absolute right-3 top-3 text-gray-400">
+                        <i class="fas fa-check-circle"></i>
+                    </span>
+                </div>
+                {% if password_form.new_password2.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ password_form.new_password2.errors.as_text }}</p>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Changer le mot de passe
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Style personnalisé pour les champs de mot de passe */
+    input[type="password"] {
+        @apply w-full px-4 py-2 border rounded pr-10;
+        @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+    }
+
+    /* Icônes dans les champs */
+    .relative input {
+        padding-right: 2.5rem;
+    }
+</style>
+{% endblock %}

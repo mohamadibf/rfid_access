@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Contrôle d'Accès</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans">
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 bg-blue-800 text-white p-4 hidden md:block">
+        <div class="flex items-center space-x-2 mb-8">
+            <i class="fas fa-lock-open text-2xl"></i>
+            <h1 class="text-xl font-bold">Accès RFID</h1>
+        </div>
+
+        <nav>
+            <ul class="space-y-2">
+                <li>
+                    <a href="{% url 'dashboard' %}" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-700">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Tableau de bord</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'user_management' %}"
+                       class="flex items-center space-x-2 p-2 rounded hover:bg-blue-700">
+                        <i class="fas fa-users"></i>
+                        <span>Gestion des utilisateurs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'access_logs' %}" class="flex items-center space-x-2 p-2 rounded hover:bg-blue-700">
+                        <i class="fas fa-history"></i>
+                        <span>Journal des accès</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'system_settings' %}"
+                       class="flex items-center space-x-2 p-2 rounded hover:bg-blue-700">
+                        <i class="fas fa-cog"></i>
+                        <span>Configuration</span>
+                    </a>
+                </li>
+               <li>
+    <a href="{% url 'role_list' %}"
+       class="flex items-center space-x-2 p-2 rounded hover:bg-blue-700 transition-colors duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <span>Gestion des rôles</span>
+    </a>
+</li>
+            </ul>
+        </nav>
+
+        <div class="mt-auto pt-4 border-t border-blue-700">
+            <div class="flex items-center space-x-2 p-2">
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span>Admin</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto">
+        <header class="bg-white shadow p-4 flex justify-between items-center">
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-gray-600">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-800" id="page-title">Tableau de bord</h2>
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full hover:bg-gray-200">
+                    <i class="fas fa-bell text-gray-600"></i>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-4">
+            <!-- Le contenu spécifique à chaque page sera inséré ici -->
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<script>
+    // Toggle menu mobile
+    document.getElementById('menu-toggle').addEventListener('click', function () {
+        document.querySelector('.w-64').classList.toggle('hidden');
+    });
+</script>
+</body>
+</html>

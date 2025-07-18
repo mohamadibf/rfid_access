@@ -1,0 +1,160 @@
+{% extends "access_control/layout.html" %}
+
+{% block content %}
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Modifier l'utilisateur</h2>
+            <a href="{% url 'user_management' %}" class="text-blue-600 hover:text-blue-800">
+                <i class="fas fa-arrow-left mr-1"></i> Retour à la liste
+            </a>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Section Informations personnelles -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold mb-4">Informations personnelles</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 mb-2">Prénom</label>
+                        {{ user_form.first_name }}
+                        {% if user_form.first_name.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ user_form.first_name.errors.as_text }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 mb-2">Nom</label>
+                        {{ user_form.last_name }}
+                        {% if user_form.last_name.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ user_form.last_name.errors.as_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-gray-700 mb-2">Email</label>
+                    {{ user_form.email }}
+                    {% if user_form.email.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ user_form.email.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Section Badge RFID -->
+            <div class="border-b pb-6">
+                <h3 class="text-xl font-semibold mb-4">Badge RFID</h3>
+
+                <div>
+                    <label class="block text-gray-700 mb-2">UID du badge</label>
+                    <div class="flex space-x-2">
+                        {{ badge_form.uid }}
+                        <button type="button" id="scan-badge-btn"
+                                class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 flex items-center">
+                            <i class="fas fa-rfid mr-2"></i>
+                            Scanner
+                        </button>
+                    </div>
+                    {% if badge_form.uid.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ badge_form.uid.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="mt-4">
+                    <label class="flex items-center space-x-2">
+                        {{ badge_form.is_active }}
+                        <span>Badge actif</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="flex justify-end space-x-3">
+                <a href="{% url 'user_management' %}"
+                   class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100">
+                    Annuler
+                </a>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <i class="fas fa-save mr-2"></i>
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+    {#   Style #}
+    <style>
+        /* Style personnalisé pour les champs de mot de passe */
+        input {
+            height: 40px;
+            border-radius: 5px;
+            border: 2px solid black;
+            padding: 5px;
+        }
+
+        /* Icônes dans les champs */
+        .relative input {
+            padding-right: 2.5rem;
+        }
+    </style>
+
+    <!-- Script pour le scan de badge -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const scanBtn = document.getElementById('scan-badge-btn');
+            const uidField = document.getElementById('{{ badge_form.uid.id_for_label }}');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'fixed bottom-4 right-4 p-4 rounded-md hidden text-white';
+            document.body.appendChild(statusDiv);
+
+            scanBtn.addEventListener('click', async function () {
+                // Réinitialiser l'affichage
+                statusDiv.className = 'fixed bottom-4 right-4 p-4 rounded-md hidden text-white';
+
+                // Désactiver le bouton pendant le scan
+                scanBtn.disabled = true;
+                scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Scanning...';
+
+                try {
+                    const response = await fetch("{% url 'scan_badge' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: new FormData()
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        uidField.value = data.uid;
+                        statusDiv.textContent = data.message;
+                        statusDiv.className = 'fixed bottom-4 right-4 p-4 rounded-md bg-green-500 text-white';
+
+                        if (data.is_new) {
+                            document.getElementById('{{ badge_form.is_active.id_for_label }}').checked = true;
+                        }
+                    } else {
+                        statusDiv.textContent = data.message || 'Erreur inconnue';
+                        statusDiv.className = 'fixed bottom-4 right-4 p-4 rounded-md bg-red-500 text-white';
+                    }
+                } catch (error) {
+                    statusDiv.textContent = 'Erreur de connexion au serveur';
+                    statusDiv.className = 'fixed bottom-4 right-4 p-4 rounded-md bg-red-500 text-white';
+                    console.error('Error:', error);
+                } finally {
+                    scanBtn.disabled = false;
+                    scanBtn.innerHTML = '<i class="fas fa-rfid mr-2"></i> Lire un badge';
+                    statusDiv.classList.remove('hidden');
+
+                    // Cacher la notification après 5s
+                    setTimeout(() => {
+                        statusDiv.classList.add('hidden');
+                    }, 5000);
+                }
+            });
+        });
+    </script>
+{% endblock %}

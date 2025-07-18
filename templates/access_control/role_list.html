@@ -1,0 +1,39 @@
+{% extends "access_control/layout.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Gestion des Rôles</h1>
+        <a href="{% url 'role_create' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Créer un Rôle
+        </a>
+    </div>
+
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for role in roles %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ role.name }}</td>
+                    <td class="px-6 py-4">
+                        {% for perm in role.permissions.all %}
+                        <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded mr-1">{{ perm.name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="{% url 'role_update' role.id %}" class="text-blue-600 hover:text-blue-900 mr-3">Modifier</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
